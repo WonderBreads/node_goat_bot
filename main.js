@@ -1,7 +1,11 @@
 const { Telegraf, Context } = require("telegraf")
-const bot = new Telegraf(process.env.TELEGRAM_TEST_GOAT_BOT_API_KEY)
+const bot = new Telegraf("")
 
 const words = ["blue", "red"]
+let randomWord;
+let chatMap = {
+    
+}
 
 String.prototype.shuffle = function () {
     let a = this.split(""),
@@ -30,20 +34,25 @@ This is an interactive bot to add to your dumb ass group chats. Currently, you c
 `))
 
 bot.hears("/scramble", context => {
-    let a = words[Math.floor(Math.random() * words.length)]
-    let b = a.shuffle();
-    context.reply("What is " + b + " unscrambled?")
-    while (context.chat != a && context.chat != "exit") {
-        context.reply("That answer was incorrect " + context.from.username + ".")
-    }
-    if (context.chat == "exit") {
-        context.reply("Thanks for playing, you have not exited the game.")
-    }
-    else
-        context.reply(context.from.username + " you are the winner, the answer was " + a + ". To play again type /scramble again.")
+    randomWord = words[Math.floor(Math.random() * words.length)]
+    let chatId = context.chat.id
+    let scrambledWord = randomWord.shuffle();
 
+    chatMap[chatId] = randomWord
+
+    context.reply("What is " + scrambledWord + " unscrambled?")
+    console.log("Current Chat map:")
+    console.log(chatMap)
 })
 
+bot.on('text', (ctx) => {
+
+    if (ctx.message.text === chatMap[ctx.chat.id]) {
+        ctx.reply(`Congrats! ${ctx.from.first_name} guessed the word correctly. it was: ${randomWord}`)
+        chatMap[ctx.chat.id] = ""
+    }
+
+})
 
 bot.launch();
 
